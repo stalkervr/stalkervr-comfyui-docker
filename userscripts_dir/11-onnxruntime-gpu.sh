@@ -37,7 +37,7 @@ set -e
 
 error_exit() {
   echo -n -e "${LOG_ERR}!! ERROR: ${NC}"
-  echo $*
+  echo "$*"
   echo -e "!! Exiting onnxruntime-gpu Script (ID: $$)"
   exit 1
 }
@@ -172,6 +172,8 @@ if [ "A$must_build" == "Atrue" ]; then
 
     cd $tdd
 
+    # This heredoc is expanded now; escape variables that the generated script
+    # must evaluate after setting its own environment.
     cat > $tdd/build.cmd << EOF
 #!/bin/bash
 export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
@@ -186,7 +188,7 @@ find . -type f -name 'CMakeCache.txt' -delete
 ./build.sh \
     --config Release \
     --build_shared_lib \
-    --parallel $CMAKE_BUILD_PARALLEL_LEVEL \
+    --parallel \$CMAKE_BUILD_PARALLEL_LEVEL \
     --nvcc_threads 1 \
     --use_cuda \
     --cuda_home /usr/local/cuda \
