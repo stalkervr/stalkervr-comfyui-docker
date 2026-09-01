@@ -109,7 +109,7 @@ echo "== Most Environment variables set"
 
 # if command line arguments are provided, write them to a file, for example /bin/bash would give us a shell as comfy
 cmd_override_file=$itdir/comfy_run.sh
-if [ ! -z "$*" ]; then 
+if [ ! -z "$*" ]; then
   echo "!! Seeing command line override, placing it in $cmd_override_file: $*"
   write_worldtmpfile $cmd_override_file "$*"
 fi
@@ -202,10 +202,10 @@ FORCE_CHOWN=${FORCE_CHOWN:-"false"} # any value works, empty value or false mean
 FORCE_CHOWN=`lc "${FORCE_CHOWN}"`
 
 # comfytoo is a specfiic user not existing by default on ubuntu, we can check its whomai
-if [ "A${whoami}" == "Acomfytoo" ]; then 
+if [ "A${whoami}" == "Acomfytoo" ]; then
   echo "-- Running as comfytoo, will switch comfy to the desired UID/GID"
   # The script is started as comfytoo -- UID/GID 1025/1025
-  
+
   if [ "A${FORCE_CHOWN}" != "Afalse" ]; then
     echo "-- Force chown mode enabled, will force change directory ownership as comfy user during script rerun (might be slow)"
     sudo touch /etc/comfy_force_chown
@@ -218,7 +218,7 @@ if [ "A${whoami}" == "Acomfytoo" ]; then
   sudo usermod -o -u ${WANTED_UID} comfy || error_exit "Failed to set UID of comfy user"
   sudo chown -R ${WANTED_UID}:${WANTED_GID} /home/comfy || error_exit "Failed to set owner of /home/comfy"
   sudo chown ${WANTED_UID}:${WANTED_GID} ${COMFYUSER_DIR} || error_exit "Failed to set owner of ${COMFYUSER_DIR}"
-  save_env /tmp/comfytoo_env.txt  
+  save_env /tmp/comfytoo_env.txt
   # restart the script as comfy set with the correct UID/GID this time
   echo "-- Restarting as comfy user with UID ${WANTED_UID} GID ${WANTED_GID}"
   sudo su comfy $script_fullname || error_exit "subscript failed"
@@ -449,7 +449,7 @@ fi
 ##
 echo ""; echo "== Confirm the ComfyUI directory is present and we can write to it"
 it_dir="${COMFYUSER_DIR}/mnt/ComfyUI"
-dir_validate "${it_dir}" 
+dir_validate "${it_dir}"
 it="${it_dir}/.testfile"; touch $it && rm -f $it || error_exit "Failed to write to ComfyUI directory as the comfy user"
 
 # Check that ComfyUI's remote is set to the correct one
@@ -466,7 +466,7 @@ cd "${cdir}"
 ##
 echo ""; echo "== Check on BASE_DIRECTORY (if used / if using \"$ignore_value\" then disable it)"
 if [ "$BASE_DIRECTORY" == "$ignore_value" ]; then BASE_DIRECTORY=""; fi
-if [ ! -z "$BASE_DIRECTORY" ]; then 
+if [ ! -z "$BASE_DIRECTORY" ]; then
   it_dir=$BASE_DIRECTORY
   dir_validate "${it_dir}" "mount"
   it="${it_dir}/.testfile"; touch $it && rm -f $it || error_exit "Failed to write to BASE_DIRECTORY"
@@ -761,14 +761,14 @@ if [ "A${USE_NEW_MANAGER}" == "Afalse" ]; then
     echo "== Cloning ComfyUI-Manager (within ${customnodes_dir})"
     git clone https://github.com/ltdrdata/ComfyUI-Manager.git || error_exit "ComfyUI-Manager clone failed"
     echo "== Installing ComfyUI-Manager's requirements (from ${customnodes_dir}/ComfyUI-Manager/requirements.txt)"
-    ${PIP3_CMD} -r ${customnodes_dir}/ComfyUI-Manager/requirements.txt || error_exit "ComfyUI-Manager CLI requirements installation failed" 
+    ${PIP3_CMD} -r ${customnodes_dir}/ComfyUI-Manager/requirements.txt || error_exit "ComfyUI-Manager CLI requirements installation failed"
   fi
   if [ ! -d ComfyUI-Manager ]; then error_exit "ComfyUI-Manager not found"; fi
   if [ "A${DISABLE_UPGRADES}" == "Atrue" ]; then
     echo "== ComfyUI-Manager packages upgrade disabled by DISABLE_UPGRADES"
   else
     echo "== Installing/Updating ComfyUI-Manager's requirements (from ${customnodes_dir}/ComfyUI-Manager/requirements.txt)"
-    ${PIP3_CMD} -r ${customnodes_dir}/ComfyUI-Manager/requirements.txt || error_exit "ComfyUI-Manager CLI requirements install/upgrade failed" 
+    ${PIP3_CMD} -r ${customnodes_dir}/ComfyUI-Manager/requirements.txt || error_exit "ComfyUI-Manager CLI requirements install/upgrade failed"
   fi
 fi
 
@@ -814,7 +814,7 @@ echo "== SWITCHED_VENV: ${SWITCHED_VENV}"
 if [ "A${SWITCHED_VENV}" == "Afalse" ]; then
   echo "== Skipping ComfyUI-Manager CLI fix as we are re-using the same venv as the last execution"
   echo "  -- If you are experiencing issues with custom nodes, use 'Manager -> Custom Nodes Manager -> Filter: Import Failed -> Try Fix' from the WebUI"
-else 
+else
   cm_cli=${COMFYUI_PATH}/custom_nodes/ComfyUI-Manager/cm-cli.py
   if [ ! -z "$BASE_DIRECTORY" ]; then it=${BASE_DIRECTORY}/custom_nodes/ComfyUI-Manager/cm-cli.py ; if [ -f $it ]; then cm_cli=$it; fi; fi
   if [ -f $cm_cli ]; then
@@ -825,7 +825,7 @@ else
   fi
 fi
 
-# If we are using a base directory... 
+# If we are using a base directory...
 if [ ! -z "$BASE_DIRECTORY" ]; then
   if [ ! -d "$BASE_DIRECTORY" ]; then error_exit "BASE_DIRECTORY ($BASE_DIRECTORY) not found or not a directory"; fi
   dir_validate "${BASE_DIRECTORY}" "mount"
@@ -869,7 +869,7 @@ if [ ! -z "$BASE_DIRECTORY" ]; then
   present_directories=""
   if [ -d ${BASE_DIRECTORY}/models ]; then
     for i in ${BASE_DIRECTORY}/models/*; do
-      if [ -d $i ]; then  
+      if [ -d $i ]; then
         present_directories+="${i##*/} "
       fi
     done
@@ -915,6 +915,30 @@ if [ "A${USE_NEW_MANAGER}" == "Atrue" ]; then
   fi
   echo "!! COMFY_CMDLINE_EXTRA extended, make sure to use it in user script (if any): ${COMFY_CMDLINE_EXTRA}"
 fi
+
+# Install custom llama-cpp-python with CUDA support
+echo ""
+echo "== Checking custom llama-cpp-python"
+
+if python3 -c "import llama_cpp" 2>/dev/null; then
+  echo "== llama-cpp-python already installed, skipping"
+else
+  echo "== Installing custom llama-cpp-python with CUDA support"
+
+  CMAKE_ARGS="-DGGML_CUDA=on" \
+    ${PIP3_CMD} install \
+    "git+https://github.com/TAO71-AI/llama-cpp-python-JamePeng.git" \
+    --force-reinstall \
+    --no-cache-dir \
+    || error_exit "llama-cpp-python installation failed"
+
+  echo "== llama-cpp-python installation completed"
+fi
+
+echo "== Verifying llama-cpp-python"
+
+python3 -c "import llama_cpp; print('llama-cpp-python:', llama_cpp.__version__)" \
+  || error_exit "llama-cpp-python verification failed"
 
 # Final steps before running ComfyUI
 cd ${COMFYUI_PATH}
