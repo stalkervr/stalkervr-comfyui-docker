@@ -926,7 +926,7 @@ else
   echo "== Installing custom llama-cpp-python with CUDA support"
 
   CMAKE_ARGS="-DGGML_CUDA=on" \
-    ${PIP3_CMD} install \
+    ${PIP3_CMD} \
     "git+https://github.com/TAO71-AI/llama-cpp-python-JamePeng.git" \
     --force-reinstall \
     --no-cache-dir \
