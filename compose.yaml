@@ -1,51 +1,49 @@
 services:
-
   comfyui-docker:
-
     build:
       context: .
       dockerfile: Dockerfile
       args:
         BUILD_BASE: ubuntu22_cuda12.2.2
-
     image: stalkervr/comfyui-docker:cuda12.2
     container_name: comfyui-docker
     restart: unless-stopped
     ports:
       - "8288:8188"
-
     environment:
       WANTED_UID: "1000"
       WANTED_GID: "1000"
-
       BASE_DIRECTORY: /basedir
-
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: all
-
       # Жёстко фиксируем рабочую версию PyTorch.
       TORCH_LOCK: "torch==2.11.0+cu128"
-
       # Используем именно проверенную нами команду.
       PREINSTALL_TORCH_CMD: >-
         pip3 install
         torch torchvision torchaudio
         --extra-index-url https://download.pytorch.org/whl/cu128
         torch==2.11.0+cu128
-
       # Используем обычный pip, а не uv.
       USE_UV: "false"
       # Не обновлять пакеты автоматически поверх наших версий.
       USE_PIPUPGRADE: "false"
-
       SECURITY_LEVEL: normal
-
       ENABLE_MANAGER_LEGACY_UI: "true"
       USE_NEW_MANAGER: "false"
 
     volumes:
       - /mnt/docker/data/volumes/comfyui-docker/run:/comfy/mnt
       - /mnt/docker/data/volumes/comfyui-docker/basedir:/basedir
+      # common model library
+      - /mnt/ai/common/models:/basedir/models
+      # common workflow library
+      - /mnt/ai/common/workflow:/basedir/user/default/workflows
+      # ComfyUI output directory
+      - /home/stalkervr/AiProjects/Output:/basedir/output
+      # host filesystem paths required by custom nodes
+      - /home/stalkervr:/home/stalkervr
+      - /mnt:/mnt
 
     deploy:
       resources:

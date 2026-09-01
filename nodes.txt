@@ -1,5 +1,9 @@
+# ComfyUI-Manager
+https://github.com/comfy-org/ComfyUI-Manager
+
 # Upscale
 https://github.com/ssitu/ComfyUI_UltimateSDUpscale
 
 # Private
 https://github.com/stalkervr/ComfyUI-StalkerVr
+
