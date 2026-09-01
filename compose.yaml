@@ -1,57 +1,52 @@
 services:
-  comfyui-nvidia:
-    # Use your preferred image tag
-    # latest points to ubuntu24_cuda12.6.3-latest
-    # other tags are available, such as ubuntu24_cuda13.0-latest
-    # See README.md for more information
-    image: mmartial/comfyui-nvidia-docker:latest
-    container_name: comfyui-nvidia
-    ports:
-      - 8188:8188
-    volumes:
-      - ./run:/comfy/mnt
-      - ./basedir:/basedir
-#      - /usr/lib/wsl:/usr/lib/wsl # Required for Windows Subsystem for Linux 2
+
+  comfyui-docker:
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_BASE: ubuntu22_cuda12.2.2
+
+    image: stalkervr/comfyui-docker:cuda12.2
+    container_name: comfyui-docker
     restart: unless-stopped
-#    extra_hosts:
-#      - ollama.internal:10.12.13.14 # method to add extra hosts to the container for external services (useful for Ollama's node: use http://ollama.internal:11434)
+    ports:
+      - "8288:8188"
+
     environment:
-      # Use "uv pip" instead of "pip" (Default: false)
-      - USE_UV=true
-      # set WANTED_UID and WANTED_GID to your user and group as obtained with `id -u` and `id -g`
-      - WANTED_UID=1000
-      - WANTED_GID=1000
-      # enable BASE_DIRECTORY and sets it to use the mount point to your basedir
-      - BASE_DIRECTORY=/basedir
-      # set SECURITY_LEVEL to normal (Default: normal)
-      - SECURITY_LEVEL=normal
-      # Disabling new ComfyUI Manager parameters (update to ComfyUI >= 0.5.0 before using)
-      - USE_NEW_MANAGER=false
-      # in favor of legacy UI (without the new manager)
-      - ENABLE_MANAGER_LEGACY_UI=true
-      # NVIDIA GPU recommended parameters
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      # Arguments to pass to ComfyUI
-#      - COMFY_CMDLINE_EXTRA=--disable-api-nodes --fast fp16_accumulation --normalvram --reserve-vram 1 --fp16-vae --cuda-malloc 
-# Have ComfyUI listen on 127.0.0.1:8181 and use socat to expose the service on 0.0.0.0:8188 (Default: false)
-#      - USE_SOCAT=false 
-# Force change directory ownership as the comfy user during script startup (Default: false)
-#      - FORCE_CHOWN=false 
-# Upgrade ComfyUI and other Python packages to the latest version during startup (Default: true)
-#      - USE_PIPUPGRADE=true 
-# Disable upgrades when starting the container (also disables USE_PIPUPGRADE) (Default: false)
-#      - DISABLE_UPGRADES=false 
-# Automatically install/upgrade torch. (Default: true)
-#      - PREINSTALL_TORCH=true 
-# Required for Windows Subsystem for Linux 2
-#      - LD_LIBRARY_PATH=/usr/lib/wsl/lib 
-# Add extra environment variables if needed
-#      - HF_TOKEN=hf_... # set your huggingface token to avoid rate limiting
-# This is set by default, do not change it if you intend to install custom nodes
-#      - NETWORK_MODE=personal_cloud
-# Default umask: 0022 (files readable by others); allow override using the UMASK environment variable
-#      - UMASK=0077
+      WANTED_UID: "1000"
+      WANTED_GID: "1000"
+
+      BASE_DIRECTORY: /basedir
+
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+
+      # Жёстко фиксируем рабочую версию PyTorch.
+      TORCH_LOCK: "torch==2.11.0+cu128"
+
+      # Используем именно проверенную нами команду.
+      PREINSTALL_TORCH_CMD: >-
+        pip3 install
+        torch torchvision torchaudio
+        --extra-index-url https://download.pytorch.org/whl/cu128
+        torch==2.11.0+cu128
+
+      # Используем обычный pip, а не uv.
+      USE_UV: "false"
+      # Не обновлять пакеты автоматически поверх наших версий.
+      USE_PIPUPGRADE: "false"
+
+      SECURITY_LEVEL: normal
+
+      ENABLE_MANAGER_LEGACY_UI: "true"
+      USE_NEW_MANAGER: "false"
+
+    volumes:
+      - /mnt/docker/data/volumes/comfyui-docker/run:/comfy/mnt
+      - /mnt/docker/data/volumes/comfyui-docker/basedir:/basedir
+
     deploy:
       resources:
         reservations:
