@@ -83,16 +83,26 @@ update_submodules_with_retry() {
     echo "Updating Nunchaku submodules (attempt $attempt/$NUNCHAKU_GIT_RETRIES)"
     echo "============================================================"
 
-    if git -C "$source_dir" \
+    if ! git -C "$source_dir" \
+      -c safe.directory="*" \
+      -c http.version=HTTP/1.1 \
+      -c http.maxRequests=1 \
+      submodule sync --recursive; then
+      echo "${LOG_WARN}WARNING:${NC} submodule sync failed"
+    elif ! git -C "$source_dir" \
+      -c safe.directory="*" \
       -c http.version=HTTP/1.1 \
       -c http.maxRequests=1 \
       submodule update --init --recursive; then
-
+      echo "${LOG_WARN}WARNING:${NC} submodule update failed"
+    elif [ ! -d "$source_dir/third_party/cutlass" ]; then
+      echo "${LOG_WARN}WARNING:${NC} CUTLASS submodule directory is missing"
+    elif [ ! -f "$source_dir/third_party/cutlass/include/cutlass/matrix.h" ]; then
+      echo "${LOG_WARN}WARNING:${NC} CUTLASS matrix.h is missing"
+    else
       echo "${LOG_OK}SUCCESS:${NC} Nunchaku submodules initialized"
       return 0
     fi
-
-    echo "${LOG_WARN}WARNING:${NC} Submodule update failed (attempt $attempt/$NUNCHAKU_GIT_RETRIES)"
 
     if [ "$attempt" -lt "$NUNCHAKU_GIT_RETRIES" ]; then
       echo "Waiting ${NUNCHAKU_GIT_RETRY_DELAY}s before retry..."
