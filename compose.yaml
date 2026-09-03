@@ -34,7 +34,7 @@ services:
       SECURITY_LEVEL: normal
       ENABLE_MANAGER_LEGACY_UI: "true"
       USE_NEW_MANAGER: "false"
-      #INSTALL_FLASH_ATTN: "true"
+      INSTALL_FLASH_ATTN: "true"
 
     volumes:
       - /mnt/docker/data/volumes/comfyui-docker/run:/comfy/mnt
@@ -48,7 +48,7 @@ services:
       # host filesystem paths required by custom nodes
       - /home/stalkervr:/home/stalkervr
       - /mnt:/mnt
-      #- ./userscripts_dir:/userscripts_dir:ro
+      - ./userscripts_dir:/userscripts_dir:ro
 
     deploy:
       resources:
